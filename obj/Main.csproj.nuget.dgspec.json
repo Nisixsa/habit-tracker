@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\dev\\proj1\\main\\Main.csproj": {}
+    "C:\\dev\\Proj1\\Main\\Main.csproj": {}
   },
   "projects": {
-    "C:\\dev\\proj1\\main\\Main.csproj": {
+    "C:\\dev\\Proj1\\Main\\Main.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\dev\\proj1\\main\\Main.csproj",
+        "projectUniqueName": "C:\\dev\\Proj1\\Main\\Main.csproj",
         "projectName": "Main",
-        "projectPath": "C:\\dev\\proj1\\main\\Main.csproj",
+        "projectPath": "C:\\dev\\Proj1\\Main\\Main.csproj",
         "packagesPath": "C:\\Users\\Nisixsa\\.nuget\\packages\\",
-        "outputPath": "C:\\dev\\proj1\\main\\obj\\",
+        "outputPath": "C:\\dev\\Proj1\\Main\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nisixsa\\AppData\\Roaming\\NuGet\\NuGet.Config",
