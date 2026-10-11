@@ -5,84 +5,195 @@ using System.Text.Json;
 
 class Program
 {
+    static string path = "habits.json";
+    static List<Habit> habits = new List<Habit>();
     static void Main()
     {
-        string path = "habits.json";
-        List<string> habits = new List<string>();
-
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            habits = JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
-        }
+        LoadHabits();
 
         while (true)
         {
-            Console.WriteLine("\n=== HABIT TRACKER ===");
-            Console.WriteLine("1. Добавить привычку");
-            Console.WriteLine("2. Показать привычки");
-            Console.WriteLine("3. Удалить привычку");
-            Console.WriteLine("4. Выход");
-
+            ShowMenu();
             string? input = Console.ReadLine();
 
-            if (!int.TryParse(input, out int choice) || choice < 1 || choice > 4)
+            if (!int.TryParse(input, out int choice) || choice < 1 || choice > 5)
             {
-                Console.WriteLine("Введите число от 1 до 4");
+                Print("Введите число от 1 до 5");
                 continue;
             }
 
             switch (choice)
             {
                 case 1:
-                    Console.Write("Введите привычку: ");
-                    string habit = Console.ReadLine()?.Trim() ?? string.Empty;
-                    if (!string.IsNullOrWhiteSpace(habit))
-                    {
-                        habits.Add(habit);
-                        Console.WriteLine("Добавлено!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Название не может быть пустым.");
-                    }
+                    AddHabit();
                     break;
-
                 case 2:
-                    if (habits.Count == 0)
-                    {
-                        Console.WriteLine("Список привычек пуст.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Ваши привычки:");
-                        for (int i = 0; i < habits.Count; i++)
-                        {
-                            Console.WriteLine($"{i + 1}. {habits[i]}");
-                        }
-                    }
+                    ShowHabits();
                     break;
-
                 case 3:
-                    Console.Write("Введите номер привычки для удаления: ");
-                    string? deleteInput = Console.ReadLine();
-                    if (int.TryParse(deleteInput, out int deleteIndex) && deleteIndex >= 1 && deleteIndex <= habits.Count)
-                    {
-                        habits.RemoveAt(deleteIndex - 1);
-                        Console.WriteLine("Привычка удалена.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Неверный номер привычки.");
-                    }
+                    DeleteHabit();
                     break;
-
                 case 4:
-                    string jsonOut = JsonSerializer.Serialize(habits);
-                    File.WriteAllText(path, jsonOut);
-                    Console.WriteLine("Данные сохранены. До свидания!");
-                    return;
+                    MarkHabitAsCompleted();
+                    break;
+                case 5:
+                    Exit();
+                    break;
             }
         }
     }
+    static void LoadHabits()
+    {
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            habits = JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
+        }
+    }
+    static void SaveHabits()
+    {
+        string json = JsonSerializer.Serialize(habits);
+        File.WriteAllText(path, json);
+    }
+    static void ShowMenu()
+    {
+        Print("\n=== HABIT TRACKER ===");
+        Print("1. Добавить привычку");
+        Print("2. Показать привычки");
+        Print("3. Удалить привычку");
+        Print("4. Отметить привычку как завершенную");
+        Print("5. Выход");
+    }
+    static void AddHabit()
+    {
+    Print("Введите привычку: ");
+    string title = Console.ReadLine() ?? string.Empty;
+
+    if (!string.IsNullOrWhiteSpace(title))
+    {
+        habits.Add(new Habit { Title = title });
+        SaveHabits();
+        Print("Привычка добавлена.");
+    }
+    else
+    {
+        Print("Название не может быть пустым.");
+    }
+    }
+    static void ShowHabits()
+    {
+        if (habits.Count == 0)
+        {
+            Print("Список привычек пуст.");
+        }
+        else
+        {
+            Print("Список привычек:");
+            foreach (var habit in habits)
+            {
+                Print($"- {habit.Title} (Завершено: {habit.IsCompleted})");
+            }
+        }
+    }
+    static void DeleteHabit()
+    {
+    if (habits.Count == 0)
+    {
+        Print("Список привычек пуст.");
+        return;
+    }
+
+    Print("Список привычек:");
+    
+    ShowHabitsForSelection();
+
+    Print("Введите номер привычки для удаления:");
+
+    if (int.TryParse(Console.ReadLine(), out int index) &&
+        index > 0 &&
+        index <= habits.Count)
+    {
+        Print($"Удалить привычку \"{habits[index - 1].Title}\"? (y/n)");
+
+        string? confirm = Console.ReadLine();
+
+        if (confirm?.ToLower() == "y")
+        {
+            habits.RemoveAt(index - 1);
+            Print("Привычка удалена.");
+            SaveHabits();
+        }
+        else
+        {
+            Print("Удаление отменено.");
+        }
+    }
+    else
+    {
+        Print("Неверный номер привычки.");
+    }
+    }
+static void MarkHabitAsCompleted()
+    {
+    if (habits.Count == 0)
+    {
+        Print("Список привычек пуст.");
+        return;
+    }
+
+    Print("Список привычек:");
+
+    ShowHabitsWithNumbers();
+
+    Print("Введите номер привычки для отметки как завершенной:");
+
+    if (int.TryParse(Console.ReadLine(), out int index) &&
+        index > 0 &&
+        index <= habits.Count)
+    {
+        if (habits[index - 1].IsCompleted)
+        {
+            Print("Эта привычка уже завершена.");
+        }
+        else
+        {
+            habits[index - 1].IsCompleted = true;
+            SaveHabits();
+            Print("Привычка отмечена как завершенная.");
+        }
+    }
+    else
+    {
+        Print("Неверный номер привычки.");
+    }
+    }
+    static void Exit()
+    {
+        SaveHabits();
+        Print("Выход из программы.");
+        Environment.Exit(0);
+    }
+    static void Print(string message)
+    {
+        Console.WriteLine(message);
+    }
+    static void ShowHabitsWithNumbers()
+    {
+    for (int i = 0; i < habits.Count; i++)
+    {
+        Print($"{i + 1}. {habits[i].Title} (Завершено: {habits[i].IsCompleted})");
+    }
+    } 
+    static void ShowHabitsForSelection()
+    {
+        for (int i = 0; i < habits.Count; i++)
+        {
+            Print($"{i + 1}. {habits[i].Title}");
+        }
+    }
+}
+class Habit
+{
+    public string Title  { get; set; } = string.Empty;
+    public bool IsCompleted { get; set; } = false;
 }
