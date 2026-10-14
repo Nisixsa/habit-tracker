@@ -62,8 +62,22 @@ class Program
     }
     static void SaveHabits()
     {
-        string json = JsonSerializer.Serialize(habits);
-        File.WriteAllText(path, json);
+        if (!loadSuccessful)
+        {
+            Print("Сохранение заблокировано: загрузка привычек завершилась с ошибкой.");
+        }
+        else
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(habits);
+                File.WriteAllText(path, json);
+            }
+            catch (Exception ex)
+            {
+                Print($"Ошибка при сохранении привычек: {ex.Message}");
+            }
+        }
     }
     static void ShowMenu()
     {
