@@ -42,12 +42,22 @@ class Program
             }
         }
     }
+    static bool loadSuccessful = true;
     static void LoadHabits()
     {
-        if (File.Exists(path))
+        try
         {
-            string json = File.ReadAllText(path);
-            habits = JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
+            if (File.Exists(path))
+            {
+                string json = File.ReadAllText(path);
+                habits = JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Print($"Ошибка при загрузке привычек: {ex.Message}");
+            loadSuccessful = false;
+
         }
     }
     static void SaveHabits()
@@ -66,6 +76,12 @@ class Program
     }
     static void AddHabit()
     {
+    if (!loadSuccessful)
+    {
+        Print("Предупреждение: предыдущая загрузка привычек завершилась с ошибкой. Новые привычки могут не сохраниться.");
+        return;
+    }
+    
     Print("Введите привычку: ");
     string title = Console.ReadLine() ?? string.Empty;
 
@@ -133,7 +149,7 @@ class Program
         Print("Неверный номер привычки.");
     }
     }
-static void MarkHabitAsCompleted()
+    static void MarkHabitAsCompleted()
     {
     if (habits.Count == 0)
     {
