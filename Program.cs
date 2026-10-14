@@ -113,6 +113,12 @@ class Program
     }
     static void DeleteHabit()
     {
+    if (!loadSuccessful)
+    {
+        Print("Предупреждение: предыдущая загрузка привычек завершилась с ошибкой. Удаление может не сохраниться.");
+        return;
+    }
+    
     if (habits.Count == 0)
     {
         Print("Список привычек пуст.");
@@ -151,6 +157,12 @@ class Program
     }
     static void MarkHabitAsCompleted()
     {
+    if (!loadSuccessful)
+    {
+        Print("Предупреждение: предыдущая загрузка привычек завершилась с ошибкой. Изменения могут не сохраниться.");
+        return;
+    }
+    
     if (habits.Count == 0)
     {
         Print("Список привычек пуст.");
