@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
+namespace Project;
 class Program
 {
     static string path = "habits.json";
@@ -233,9 +234,4 @@ class Program
             Print($"{i + 1}. {habits[i].Title}");
         }
     }
-}
-class Habit
-{
-    public string Title  { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; } = false;
 }
