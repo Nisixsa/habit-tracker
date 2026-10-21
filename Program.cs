@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Project;
+namespace ProjectHabitTracker;
 class Program
 {
     static string path = "habits.json";
