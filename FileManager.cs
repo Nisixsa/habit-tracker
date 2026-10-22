@@ -9,15 +9,14 @@ public static class FileManager
 {
     private static readonly string path = "habits.json";
     public static bool IsLoadSuccessful { get; private set; } = true;
-
-    public static List<Habit> LoadHabits()
+    public static AppData LoadAppData()
     {
         try
         {
             if (File.Exists(path))
             {
                 string json = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<List<Habit>>(json) ?? new List<Habit>();
+                return JsonSerializer.Deserialize<AppData>(json) ?? new AppData();
             }
         }
         catch (Exception ex)
@@ -25,10 +24,9 @@ public static class FileManager
             Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
             IsLoadSuccessful = false;
         }
-        return new List<Habit>();
+        return new AppData();
     }
-
-    public static void SaveHabits(List<Habit> habits)
+    public static void SaveAppData(AppData data)
     {
         if (!IsLoadSuccessful)
         {
@@ -38,7 +36,8 @@ public static class FileManager
 
         try
         {
-            string json = JsonSerializer.Serialize(habits, new JsonSerializerOptions { WriteIndented = true });
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(data, options);
             File.WriteAllText(path, json);
         }
         catch (Exception ex)

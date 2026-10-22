@@ -1,99 +1,212 @@
-﻿namespace Project.HabitTracker;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Project.HabitTracker;
 
 class Program
 {
-    static List<Habit> habits = FileManager.LoadHabits();
-
-    static void Main()
+    static void Main(string[] args)
     {
-        while (true)
-        {
-            ShowMenu();
-            string? input = Console.ReadLine();
+        AppData appData = FileManager.LoadAppData();
+        CheckDailyStreak(appData.Stats);
 
-            if (!int.TryParse(input, out int choice) || choice < 1 || choice > 5)
+        bool running = true;
+        while (running)
+        {
+            Console.Clear();
+            Console.WriteLine("=== HABIT TRACKER ===");
+            Console.WriteLine($"Глобальный стрик: {appData.Stats.GlobalStreak} дней | Рекорд: {appData.Stats.BestGlobalStreak} дней\n");
+
+            Console.WriteLine("Список привычек:");
+            if (appData.Habits.Count == 0)
             {
-                Console.WriteLine("Введите число от 1 до 5");
-                continue;
+                Console.WriteLine("Список пуст.");
+            }
+            else
+            {
+                for (int i = 0; i < appData.Habits.Count; i++)
+                {
+                    Console.Write($"{i + 1}. ");
+                    appData.Habits[i].ShowDetails();
+                }
             }
 
+            Console.WriteLine("\nМеню:");
+            Console.WriteLine("1. Добавить обычную привычку");
+            Console.WriteLine("2. Добавить числовую привычку");
+            Console.WriteLine("3. Отметить выполнение");
+            Console.WriteLine("4. Удалить привычку");
+            Console.WriteLine("5. Выйти и сохранить");
+            Console.Write("Выбери пункт: ");
+
+            string? choice = Console.ReadLine();
             switch (choice)
             {
-                case 1: AddHabit(); break;
-                case 2: ShowHabits(); break;
-                case 3: DeleteHabit(); break;
-                case 4: CompleteHabit(); break;
-                case 5: 
-                    FileManager.SaveHabits(habits);
-                    Console.WriteLine("Выход...");
-                    return;
+                case "1":
+                    AddHabit(appData.Habits, false);
+                    break;
+                case "2":
+                    AddHabit(appData.Habits, true);
+                    break;
+                case "3":
+                    CompleteHabit(appData);
+                    break;
+                case "4":
+                    DeleteHabit(appData.Habits);
+                    break;
+                case "5":
+                    FileManager.SaveAppData(appData);
+                    running = false;
+                    break;
+                default:
+                    Console.WriteLine("Неверный выбор.");
+                    Console.ReadKey();
+                    break;
             }
         }
     }
 
-    static void ShowMenu()
+    static void CheckDailyStreak(UserStats stats)
     {
-        Console.WriteLine("\n=== HABIT TRACKER (OOP) ===");
-        Console.WriteLine("1. Добавить привычку");
-        Console.WriteLine("2. Показать привычки");
-        Console.WriteLine("3. Удалить привычку");
-        Console.WriteLine("4. Отметить как завершенную");
-        Console.WriteLine("5. Выход");
+        if (stats.LastActiveDate == null) return;
+
+        DateTime today = DateTime.Today;
+        DateTime lastActive = stats.LastActiveDate.Value.Date;
+
+        if ((today - lastActive).Days > 1)
+        {
+            stats.GlobalStreak = 0;
+        }
     }
 
-    static void AddHabit()
+    static void AddHabit(List<Habit> habits, bool isCounter)
     {
         Console.Write("Введите название привычки: ");
         string? title = Console.ReadLine();
 
-        if (!string.IsNullOrWhiteSpace(title))
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            Console.WriteLine("Название не может быть пустым!");
+            Console.ReadKey();
+            return;
+        }
+
+        if (isCounter)
+        {
+            Console.Write("Введите целевое число: ");
+            if (int.TryParse(Console.ReadLine(), out int target) && target > 0)
+            {
+                habits.Add(new CounterHabit { Title = title, TargetCount = target });
+            }
+            else
+            {
+                Console.WriteLine("Некорректное число цели.");
+            }
+        }
+        else
         {
             habits.Add(new Habit { Title = title });
-            FileManager.SaveHabits(habits);
-            Console.WriteLine("Привычка добавлена!");
+        }
+
+        Console.WriteLine("Привычка добавлена!");
+        Console.ReadKey();
+    }
+
+    static void CompleteHabit(AppData appData)
+    {
+        if (appData.Habits.Count == 0)
+        {
+            Console.WriteLine("Список пуст.");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.Write("Введите номер привычки: ");
+        if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= appData.Habits.Count)
+        {
+            var habit = appData.Habits[index - 1];
+
+            if (habit is CounterHabit counterHabit)
+            {
+                Console.Write($"Текущий прогресс: {counterHabit.CurrentCount}/{counterHabit.TargetCount}. Сколько добавить? ");
+                if (int.TryParse(Console.ReadLine(), out int add) && add > 0)
+                {
+                    counterHabit.CurrentCount += add;
+                    if (counterHabit.CurrentCount >= counterHabit.TargetCount)
+                    {
+                        counterHabit.IsCompleted = true;
+                    }
+                }
+            }
+            else
+            {
+                habit.IsCompleted = true;
+            }
+
+            habit.LastCompletedDate = DateTime.Now;
+            UpdateGlobalStreak(appData.Stats);
+
+            Console.WriteLine("Прогресс учтен!");
+        }
+        else
+        {
+            Console.WriteLine("Неверный номер.");
+        }
+        Console.ReadKey();
+    }
+
+    static void UpdateGlobalStreak(UserStats stats)
+    {
+        DateTime today = DateTime.Today;
+
+        if (stats.LastActiveDate == null)
+        {
+            stats.GlobalStreak = 1;
+        }
+        else
+        {
+            DateTime lastActive = stats.LastActiveDate.Value.Date;
+
+            if (lastActive == today)
+            {
+            }
+            else if (lastActive == today.AddDays(-1))
+            {
+                stats.GlobalStreak++;
+            }
+            else if (lastActive < today.AddDays(-1))
+            {
+                stats.GlobalStreak = 1;
+            }
+        }
+
+        stats.LastActiveDate = today;
+
+        if (stats.GlobalStreak > stats.BestGlobalStreak)
+        {
+            stats.BestGlobalStreak = stats.GlobalStreak;
         }
     }
 
-    static void ShowHabits()
+    static void DeleteHabit(List<Habit> habits)
     {
         if (habits.Count == 0)
         {
             Console.WriteLine("Список пуст.");
+            Console.ReadKey();
             return;
         }
 
-        for (int i = 0; i < habits.Count; i++)
+        Console.Write("Введите номер для удаления: ");
+        if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= habits.Count)
         {
-            Console.Write($"{i + 1}. ");
-            habits[i].ShowDetails();
+            habits.RemoveAt(index - 1);
+            Console.WriteLine("Удалено!");
         }
-    }
-
-    static void DeleteHabit()
-    {
-        if (habits.Count == 0) return;
-        
-        ShowHabits();
-        Console.Write("Номер для удаления: ");
-        if (int.TryParse(Console.ReadLine(), out int idx) && idx > 0 && idx <= habits.Count)
+        else
         {
-            habits.RemoveAt(idx - 1);
-            FileManager.SaveHabits(habits);
-            Console.WriteLine("Удалено.");
+            Console.WriteLine("Неверный номер.");
         }
-    }
-
-    static void CompleteHabit()
-    {
-        if (habits.Count == 0) return;
-
-        ShowHabits();
-        Console.Write("Номер выполненной привычки: ");
-        if (int.TryParse(Console.ReadLine(), out int idx) && idx > 0 && idx <= habits.Count)
-        {
-            habits[idx - 1].IsCompleted = true;
-            FileManager.SaveHabits(habits);
-            Console.WriteLine("Отмечено!");
-        }
+        Console.ReadKey();
     }
 }

@@ -6,8 +6,6 @@ public class Habit
     public bool IsCompleted { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? LastCompletedDate { get; set; } = null;
-    public int Streak { get; set; } = 0;
-
     public virtual void ShowDetails()
     {
         Console.WriteLine($"{Title} (Завершено: {IsCompleted})");
