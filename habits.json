@@ -1,1 +1,21 @@
-[{"Title":"ni hao beijing","IsCompleted":false}]
+{
+  "Habits": [
+    {
+      "Title": "\u0414\u0430\u0442\u0442\u0435\u0431\u0430\u0439\u043E",
+      "IsCompleted": false,
+      "CreatedAt": "2026-10-23T18:17:27.2413601+05:00",
+      "LastCompletedDate": null
+    },
+    {
+      "Title": "\u0414\u0430\u0442\u0442\u0435\u0431\u0430\u0439\u043E\u0448\u0438\u0442\u0441\u044F",
+      "IsCompleted": false,
+      "CreatedAt": "2026-10-23T18:17:48.8501572+05:00",
+      "LastCompletedDate": null
+    }
+  ],
+  "Stats": {
+    "GlobalStreak": 0,
+    "BestGlobalStreak": 0,
+    "LastActiveDate": null
+  }
+}

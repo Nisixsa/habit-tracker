@@ -16,52 +16,23 @@ class Program
             Console.Clear();
             Console.WriteLine("=== HABIT TRACKER ===");
             Console.WriteLine($"Глобальный стрик: {appData.Stats.GlobalStreak} дней | Рекорд: {appData.Stats.BestGlobalStreak} дней\n");
-
-            Console.WriteLine("Список привычек:");
-            if (appData.Habits.Count == 0)
-            {
-                Console.WriteLine("Список пуст.");
-            }
-            else
-            {
-                for (int i = 0; i < appData.Habits.Count; i++)
-                {
-                    Console.Write($"{i + 1}. ");
-                    appData.Habits[i].ShowDetails();
-                }
-            }
-
             Console.WriteLine("\nМеню:");
-            Console.WriteLine("1. Добавить обычную привычку");
-            Console.WriteLine("2. Добавить числовую привычку");
-            Console.WriteLine("3. Отметить выполнение");
-            Console.WriteLine("4. Удалить привычку");
+            Console.WriteLine("1. Добавить привычку");
+            Console.WriteLine("2. Отметить выполнение");
+            Console.WriteLine("3. Удалить привычку");
+            Console.WriteLine("4. Посмотреть список привычек");
             Console.WriteLine("5. Выйти и сохранить");
             Console.Write("Выбери пункт: ");
 
             string? choice = Console.ReadLine();
             switch (choice)
             {
-                case "1":
-                    AddHabit(appData.Habits, false);
-                    break;
-                case "2":
-                    AddHabit(appData.Habits, true);
-                    break;
-                case "3":
-                    CompleteHabit(appData);
-                    break;
-                case "4":
-                    DeleteHabit(appData.Habits);
-                    break;
-                case "5":
-                    FileManager.SaveAppData(appData);
-                    running = false;
-                    break;
-                default:
-                    Console.WriteLine("Неверный выбор.");
-                    Console.ReadKey();
-                    break;
+                case "1":AddHabit(appData.Habits);break;
+                case "2":CompleteHabit(appData);break;
+                case "3":DeleteHabit(appData.Habits);break;
+                case "4":Console.Clear();ShowHabitsList(appData.Habits);Console.WriteLine("\nНажмите любую клавишу...");Console.ReadKey();break;
+                case "5":FileManager.SaveAppData(appData);running = false;break;
+                default:Console.WriteLine("Неверный выбор.");Console.ReadKey();break;
             }
         }
     }
@@ -78,40 +49,60 @@ class Program
             stats.GlobalStreak = 0;
         }
     }
-
-    static void AddHabit(List<Habit> habits, bool isCounter)
+    static void AddHabit(List<Habit> habits)
     {
-        Console.Write("Введите название привычки: ");
-        string? title = Console.ReadLine();
+    Console.Write("Введите название привычки: ");
+    string? title = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        Console.WriteLine("Название не может быть пустым!");
+        Console.ReadKey();
+        return;
+    }
+    while (true)
+    {
+        Console.Write("Будет ли у привычки счетчик? (y/n): ");
+        string? answer = Console.ReadLine()?.Trim().ToLower();
 
-        if (string.IsNullOrWhiteSpace(title))
+        if (answer == "y")
         {
-            Console.WriteLine("Название не может быть пустым!");
+            while (true)
+            {
+                Console.Write("Введите целевое число: ");
+
+                if (int.TryParse(Console.ReadLine(), out int target) && target > 0)
+                {
+                    habits.Add(new CounterHabit
+                    {
+                        Title = title,
+                        TargetCount = target
+                    });
+
+                    Console.WriteLine("Привычка добавлена!");
+                    Console.ReadKey();
+                    return;
+                }
+
+                Console.WriteLine("Введите корректное число больше 0.");
+            }
+        }
+        else if (answer == "n")
+        {
+            habits.Add(new Habit
+            {
+                Title = title
+            });
+
+            Console.WriteLine("Привычка добавлена!");
             Console.ReadKey();
             return;
         }
-
-        if (isCounter)
-        {
-            Console.Write("Введите целевое число: ");
-            if (int.TryParse(Console.ReadLine(), out int target) && target > 0)
-            {
-                habits.Add(new CounterHabit { Title = title, TargetCount = target });
-            }
-            else
-            {
-                Console.WriteLine("Некорректное число цели.");
-            }
-        }
         else
         {
-            habits.Add(new Habit { Title = title });
+            Console.WriteLine("Можно вводить только y или n.");
         }
-
-        Console.WriteLine("Привычка добавлена!");
-        Console.ReadKey();
     }
-
+    }
     static void CompleteHabit(AppData appData)
     {
         if (appData.Habits.Count == 0)
@@ -154,7 +145,6 @@ class Program
         }
         Console.ReadKey();
     }
-
     static void UpdateGlobalStreak(UserStats stats)
     {
         DateTime today = DateTime.Today;
@@ -187,7 +177,6 @@ class Program
             stats.BestGlobalStreak = stats.GlobalStreak;
         }
     }
-
     static void DeleteHabit(List<Habit> habits)
     {
         if (habits.Count == 0)
@@ -208,5 +197,21 @@ class Program
             Console.WriteLine("Неверный номер.");
         }
         Console.ReadKey();
+    }
+    static void ShowHabitsList(List<Habit> habits)
+    {
+    Console.WriteLine("=== СПИСОК ПРИВЫЧЕК ===");
+
+    if (habits.Count == 0)
+    {
+        Console.WriteLine("Список пуст.");
+        return;
+    }
+
+    for (int i = 0; i < habits.Count; i++)
+    {
+        Console.Write($"{i + 1}. ");
+        habits[i].ShowDetails();
+    }
     }
 }
