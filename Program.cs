@@ -82,7 +82,6 @@ class Program
                     Console.ReadKey();
                     return;
                 }
-
                 Console.WriteLine("Введите корректное число больше 0.");
             }
         }
